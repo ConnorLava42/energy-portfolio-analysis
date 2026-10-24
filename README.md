@@ -60,9 +60,6 @@ notebooks/         the full analysis, with outputs
 figures/           saved charts
 ```
 
-## Limitations
-
-- **Hindsight bias.** Portfolio weights were optimised on the same data they are judged on. A fairer test would optimise on 2021–2023 and evaluate on 2024–2025.
 - **An unusual window.** The 2022 energy crisis flatters oil and gas.
 - **Selection bias.** Stocks were chosen in 2026 from companies that still exist.
 - **Volatility understates tail risk.** Mean-variance optimisation does not capture crashes like Enphase's 92% drawdown.
