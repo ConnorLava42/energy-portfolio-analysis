@@ -43,3 +43,13 @@ def commodity_betas(weekly, stocks, factors):
         r2[stock] = model.rsquared
     return (pd.DataFrame(betas).T, pd.DataFrame(tstats).T,
             pd.Series(r2, name="R-squared"))
+    
+def rolling_betas(weekly, stocks, factors, window=52):
+    """The same regression re-estimated over a moving 52-week window.
+
+    Returns a DataFrame with two column levels: (stock, factor).
+    """
+    X = sm.add_constant(weekly[factors])
+    fits = {stock: RollingOLS(weekly[stock], X, window=window).fit().params
+            for stock in stocks}
+    return pd.concat(fits, axis=1)

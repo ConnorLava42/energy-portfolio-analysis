@@ -191,3 +191,22 @@ def plot_commodity_betas(betas, tstats, labels, save_as=None):
     ax.set_title("Sensitivity to commodity prices, controlling for the market")
     _save(fig, save_as)
     return fig
+
+# ---------------------------------------------------------------- rolling-sensitivity
+
+def plot_rolling_sector_beta(rolling, factor, label, save_as=None):
+    """Sector-average rolling beta to one commodity over time."""
+    one_factor = rolling.xs(factor, axis=1, level=1)
+    by_sector = one_factor.T.groupby(TICKER_SECTOR).mean().T
+    fig, ax = plt.subplots(figsize=(11, 5))
+    for sector in SECTORS:
+        ax.plot(by_sector[sector], lw=2, color=SECTOR_COLOURS[sector],
+                label=sector)
+    ax.axhline(0, color="black", lw=0.8)
+    ax.axvspan(pd.Timestamp("2022-02-24"), pd.Timestamp("2022-12-31"),
+               color="grey", alpha=0.15, label="2022 energy crisis")
+    ax.set(title=f"Rolling 52-week beta to {label}, sector average",
+           ylabel="Beta")
+    ax.legend(frameon=False, loc="upper right")
+    _save(fig, save_as)
+    return fig
