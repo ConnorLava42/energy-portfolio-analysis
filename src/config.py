@@ -32,3 +32,15 @@ SECTOR_COLOURS = {
     "Renewables": "#e69f00",
     "Benchmark": "#7f7f7f",
 }
+
+# --- backtesting ---
+TRAIN_END = "2023-12-31"  # out-of-sample split: optimise up to here, test after
+LOOKBACK_YEARS = 2        # rolling backtest: history used at each rebalance
+REBALANCE_FREQ = "QS"     # rebalance at the start of every quarter
+
+# --- commodities (Yahoo Finance front-month futures) ---
+COMMODITIES = {
+    "BZ=F": "Brent crude",
+    "NG=F": "US gas (Henry Hub)",
+    "TTF=F": "European gas (TTF)",
+}

@@ -5,3 +5,4 @@ matplotlib>=3.8
 seaborn>=0.13
 yfinance>=1.0
 ipykernel>=6.29
+statsmodels>=0.14

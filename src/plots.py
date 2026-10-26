@@ -1,6 +1,7 @@
 """Every chart in the project. Each function can save a PNG to figures/."""
 
 import matplotlib.pyplot as plt
+import pandas as pd
 import matplotlib.ticker as mtick
 import seaborn as sns
 from matplotlib.lines import Line2D
@@ -120,5 +121,31 @@ def plot_efficient_frontier(random_ports, frontier, special, summary,
     ax.set(title="Efficient frontier of energy stocks",
            xlabel="Annual volatility", ylabel="Expected annual return")
     ax.legend(loc="lower right", frameon=True, framealpha=0.9)
+    _save(fig, save_as)
+    return fig
+
+# ---------------------------------------------------------------- backtesting plot
+
+STRATEGY_COLOURS = {
+    "Max Sharpe": "#c0392b",
+    "Max Sharpe (25% cap)": "#e67e22",
+    "Min variance": "#2e8b57",
+    "Equal weight": "#1f4e79",
+}
+
+
+def plot_strategy_growth(strategy_returns, market, title, save_as=None):
+    """Growth of $1 for each strategy, with the S&P 500 dashed."""
+    fig, ax = plt.subplots(figsize=(11, 5.5))
+    growth = (1 + strategy_returns).cumprod()
+    for name in growth:
+        ax.plot(growth[name], lw=2, label=name,
+                color=STRATEGY_COLOURS.get(name))
+    spy = (1 + market.loc[growth.index]).cumprod()
+    ax.plot(spy, color=SECTOR_COLOURS["Benchmark"], lw=2, ls="--",
+            label=BENCHMARK)
+    ax.axhline(1, color="black", lw=0.8)
+    ax.set(title=title, ylabel="Value of $1")
+    ax.legend(frameon=True, framealpha=0.9, loc="upper left")
     _save(fig, save_as)
     return fig
