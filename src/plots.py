@@ -168,3 +168,26 @@ def plot_weight_history(weight_history, save_as=None):
     ax.legend(loc="upper left", bbox_to_anchor=(1, 1), frameon=False)
     _save(fig, save_as)
     return fig
+
+# ---------------------------------------------------------------- sensitivity heatmap
+
+def plot_commodity_betas(betas, tstats, labels, save_as=None):
+    """Heatmap of commodity betas; * marks |t| > 2 (roughly 95% confidence)."""
+    order = [t for group in SECTORS.values() for t in group if t in betas.index]
+    cols = list(labels)
+    shown = betas.loc[order, cols]
+    stars = (tstats.loc[order, cols].abs() > 2).map(lambda sig: "*" if sig else "")
+    text = shown.map(lambda v: f"{v:.2f}") + stars
+
+    fig, ax = plt.subplots(figsize=(7, 8))
+    limit = shown.abs().max().max()
+    sns.heatmap(shown, annot=text, fmt="", cmap="RdBu_r", vmin=-limit,
+                vmax=limit, cbar_kws={"label": "Beta (weekly)"}, ax=ax)
+    ax.set_xticklabels([labels[c] for c in cols], rotation=20, ha="right")
+    edge = 0
+    for group in SECTORS.values():
+        edge += len([t for t in group if t in shown.index])
+        ax.axhline(edge, color="white", lw=3)
+    ax.set_title("Sensitivity to commodity prices, controlling for the market")
+    _save(fig, save_as)
+    return fig

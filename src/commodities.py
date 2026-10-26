@@ -24,3 +24,22 @@ def combine(stock_prices, commodity_prices):
     """
     combined = stock_prices.join(commodity_prices, how="left").ffill()
     return weekly_returns(combined)
+
+def commodity_betas(weekly, stocks, factors):
+    """Regress each stock's weekly return on the market and the commodities.
+
+    stock = alpha + b_market * market + b_oil * oil + b_gas * gas + noise
+
+    Including the market means each commodity beta measures the effect of
+    oil or gas beyond what the stock market as a whole was doing.
+    Returns betas, t-statistics and R-squared, one row per stock.
+    """
+    X = sm.add_constant(weekly[factors])
+    betas, tstats, r2 = {}, {}, {}
+    for stock in stocks:
+        model = sm.OLS(weekly[stock], X).fit()
+        betas[stock] = model.params.drop("const")
+        tstats[stock] = model.tvalues.drop("const")
+        r2[stock] = model.rsquared
+    return (pd.DataFrame(betas).T, pd.DataFrame(tstats).T,
+            pd.Series(r2, name="R-squared"))
