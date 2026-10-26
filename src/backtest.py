@@ -39,3 +39,32 @@ def out_of_sample(returns, split_date):
         {name: buy_and_hold(test, weights[name]) for name in weights}
     )
     return weights, test_returns
+
+def rolling_backtest(returns, lookback_years=2, freq="QS"):
+    """Re-optimise at the start of every quarter on the previous few years.
+
+    Each rebalance only sees data from before that date, so the strategy
+    never peeks at the future. Returns each strategy's daily returns and
+    the max-Sharpe weights chosen at every rebalance.
+    """
+    first = (returns.index[0] + pd.DateOffset(years=lookback_years)).to_period("Q").start_time
+    rebalance_dates = pd.date_range(first, returns.index[-1], freq=freq)
+
+    pieces = {name: [] for name in STRATEGIES}
+    weight_history = {}
+    for i, start in enumerate(rebalance_dates):
+        is_last = i + 1 == len(rebalance_dates)
+        end = returns.index[-1] + pd.Timedelta(days=1) if is_last else rebalance_dates[i + 1]
+
+        window_start = start - pd.DateOffset(years=lookback_years)
+        train = returns[(returns.index >= window_start) & (returns.index < start)]
+        hold = returns[(returns.index >= start) & (returns.index < end)]
+
+        for name, pick in STRATEGIES.items():
+            w = pick(train)
+            pieces[name].append(buy_and_hold(hold, w))
+            if name == "Max Sharpe":
+                weight_history[start] = w
+
+    results = pd.DataFrame({name: pd.concat(p) for name, p in pieces.items()})
+    return results, pd.DataFrame(weight_history).T

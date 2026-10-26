@@ -149,3 +149,22 @@ def plot_strategy_growth(strategy_returns, market, title, save_as=None):
     ax.legend(frameon=True, framealpha=0.9, loc="upper left")
     _save(fig, save_as)
     return fig
+
+# ---------------------------------------------------------------- rolling-backtesting plot
+
+def plot_weight_history(weight_history, save_as=None):
+    """Max-Sharpe weights at each rebalance, summed by sector."""
+    by_sector = weight_history.T.groupby(TICKER_SECTOR).sum().T[list(SECTORS)]
+    # Repeat the last row one quarter later so the final holding period shows
+    by_sector.loc[by_sector.index[-1] + pd.DateOffset(months=3)] = by_sector.iloc[-1]
+    fig, ax = plt.subplots(figsize=(11, 4.5))
+    ax.stackplot(by_sector.index, by_sector.T.values, step="post",
+                 labels=by_sector.columns,
+                 colors=[SECTOR_COLOURS[s] for s in by_sector.columns])
+    ax.set_ylim(0, 1)
+    ax.yaxis.set_major_formatter(mtick.PercentFormatter(1.0))
+    ax.set(title="Max-Sharpe portfolio by sector at each quarterly rebalance",
+           ylabel="Share of portfolio")
+    ax.legend(loc="upper left", bbox_to_anchor=(1, 1), frameon=False)
+    _save(fig, save_as)
+    return fig
