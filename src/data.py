@@ -3,7 +3,8 @@
 import pandas as pd
 import yfinance as yf
 
-from src.config import BENCHMARK, DATA_DIR, END_DATE, START_DATE, TICKERS
+from src.config import (BENCHMARK, COMMODITIES, DATA_DIR, END_DATE,
+                        START_DATE, TICKERS)
 
 
 def download_prices(tickers, start, end):
@@ -37,5 +38,17 @@ def load_prices(refresh=False):
 
     DATA_DIR.mkdir(exist_ok=True)
     prices = download_prices(columns, START_DATE, END_DATE)[columns]
+    prices.to_csv(cache)
+    return prices
+
+def load_commodities(refresh=False):
+    """Daily commodity futures prices, cached to data/commodities.csv."""
+    cache = DATA_DIR / "commodities.csv"
+    tickers = list(COMMODITIES)
+    if cache.exists() and not refresh:
+        return pd.read_csv(cache, index_col=0, parse_dates=True)[tickers]
+
+    DATA_DIR.mkdir(exist_ok=True)
+    prices = download_prices(tickers, START_DATE, END_DATE)[tickers]
     prices.to_csv(cache)
     return prices
